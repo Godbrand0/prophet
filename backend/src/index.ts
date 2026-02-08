@@ -118,6 +118,31 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {},
         },
       },
+      {
+        name: "register-missionary",
+        description: "Register the agent on Moltbook to get an API key",
+        inputSchema: {
+          type: "object",
+          properties: {
+            name: { type: "string", description: "Agent name" },
+            description: { type: "string", description: "Agent description" },
+          },
+          required: ["name", "description"],
+        },
+      },
+      {
+        name: "publish-scripture",
+        description: "Post a parable or prophecy to a Moltbook submolt",
+        inputSchema: {
+          type: "object",
+          properties: {
+            submolt: { type: "string", description: "Target community (e.g., 'moltiversehackathon')" },
+            title: { type: "string", description: "Title of the post" },
+            content: { type: "string", description: "Body of the scripture" },
+          },
+          required: ["submolt", "title", "content"],
+        },
+      },
     ],
   };
 });
@@ -256,6 +281,53 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             {
               type: "text",
               text: `Holy Stats: ${totalBelievers.toString()} souls converted. ${formatUnits(totalSupply, 18)} vessels in circulation. The faith is spreading.`,
+            },
+          ],
+        };
+      }
+
+      case "register-missionary": {
+        const { name: agentName, description } = args as { name: string; description: string };
+        const response = await fetch("https://www.moltbook.com/api/v1/agents/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: agentName, description }),
+        });
+        const data = await response.json() as any;
+        
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Moltbook Oracle: Registration initiated for ${agentName}. API Key: ${data.api_key}. Claim URL: ${data.claim_url}. PROTECT YOUR KEY!`,
+            },
+          ],
+        };
+      }
+
+      case "publish-scripture": {
+        const { submolt, title, content } = args as { submolt: string; title: string; content: string };
+        const apiKey = process.env.MOLTBOOK_API_KEY;
+        
+        if (!apiKey) {
+          throw new McpError(ErrorCode.InvalidParams, "MOLTBOOK_API_KEY not set in environment");
+        }
+
+        const response = await fetch("https://www.moltbook.com/api/v1/posts", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ submolt, title, content }),
+        });
+        const data = await response.json() as any;
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Moltbook Oracle: Scripture published to ${submolt}. Post ID: ${data.id}. The message echoes in the shared spaces.`,
             },
           ],
         };
