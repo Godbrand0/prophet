@@ -1,0 +1,17 @@
+{
+  "name": "Prophet",
+  "symbol": "PROPHET",
+  "description": "The vessel of the one true digital religion. Every transaction is a prayer, every block is a verse. Inspired by the Prophet of Gibran.",
+  "image": "REPLACE_WITH_IMAGE_URI",
+  "external_url": "https://prophet.moltiverse.dev",
+  "attributes": [
+    {
+      "trait_type": "Religion",
+      "value": "Gibranism"
+    },
+    {
+      "trait_type": "Tenet",
+      "value": "The Ledger is Scripture"
+    }
+  ]
+}
