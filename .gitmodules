@@ -1,0 +1,6 @@
+[submodule "contract"]
+	path = contract
+	url = ./contract
+[submodule "frontend"]
+	path = frontend
+	url = ./frontend
