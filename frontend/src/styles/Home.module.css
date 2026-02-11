@@ -1,108 +1,421 @@
+/* ── Container ───────────────────────────────────── */
 .container {
-  padding: 0 2rem;
-  background: radial-gradient(circle at center, #1a1a1a 0%, #0a0a0a 100%);
+  background: radial-gradient(ellipse at 50% 0%, #1a1a1a 0%, #0a0a0a 70%);
   color: #e0e0e0;
   min-height: 100vh;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
+/* ── Main ────────────────────────────────────────── */
 .main {
-  min-height: 100vh;
-  padding: 4rem 0;
-  flex: 1;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
+}
+
+/* ── Connect Wallet ──────────────────────────────── */
+.connectWrapper {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  padding: 1rem 0;
+}
+
+/* ── Hero ────────────────────────────────────────── */
+.hero {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.logoWrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.logo {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  object-fit: cover;
+  filter: drop-shadow(0 0 40px rgba(255, 215, 0, 0.3)) drop-shadow(0 0 80px rgba(0, 128, 128, 0.2));
 }
 
 .title {
   margin: 0;
-  line-height: 1.15;
   font-size: 4rem;
-  text-align: center;
+  font-weight: 800;
+  line-height: 1.1;
   background: linear-gradient(135deg, #ffd700 0%, #008080 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  font-weight: 800;
-  margin-bottom: 1rem;
+}
+
+.subtitle {
+  margin: 0.4rem 0 0;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.25rem;
+  color: #888;
 }
 
 .description {
-  text-align: center;
-  line-height: 1.5;
-  font-size: 1.5rem;
+  margin: 1.5rem auto 0;
+  max-width: 640px;
+  font-size: 1.15rem;
   font-style: italic;
-  max-width: 800px;
-  color: #b0b0b0;
-  margin-bottom: 3rem;
+  line-height: 1.7;
+  color: #999;
 }
 
+/* ── Stats Grid ──────────────────────────────────── */
 .statsGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
+  gap: 1.5rem;
   width: 100%;
-  max-width: 1000px;
+  margin-bottom: 3rem;
 }
 
 .statCard {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 2rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 1.75rem 1rem;
   border-radius: 1rem;
   text-align: center;
   backdrop-filter: blur(10px);
+  transition: border-color 0.3s;
+}
+
+.statCard:hover {
+  border-color: rgba(255, 215, 0, 0.2);
 }
 
 .statValue {
-  font-size: 2.5rem;
-  font-weight: bold;
+  font-size: 2.25rem;
+  font-weight: 700;
   color: #ffd700;
   display: block;
 }
 
 .statLabel {
-  font-size: 0.9rem;
-  color: #888;
+  font-size: 0.8rem;
+  color: #666;
   text-transform: uppercase;
-  letter-spacing: 0.1rem;
+  letter-spacing: 0.12rem;
+  margin-top: 0.25rem;
+  display: block;
 }
 
-.scriptureFeed {
-  margin-top: 4rem;
+/* ── Believe Section ─────────────────────────────── */
+.believeSection {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.believeButton {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.08rem;
+  padding: 1rem 3rem;
+  border: none;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.believeActive {
+  background: linear-gradient(135deg, #ffd700, #e6a800);
+  color: #0a0a0a;
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.25), 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.believeActive:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 50px rgba(255, 215, 0, 0.4), 0 6px 30px rgba(0, 0, 0, 0.5);
+}
+
+.believeActive:active {
+  transform: translateY(0);
+}
+
+.believeDisabled {
+  background: rgba(255, 255, 255, 0.08);
+  color: #666;
+  cursor: not-allowed;
+}
+
+.believeLoading {
+  background: linear-gradient(135deg, #b8860b, #996600);
+  color: #1a1a1a;
+  cursor: wait;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.believeWitness {
+  background: linear-gradient(135deg, #008080, #006666);
+  color: #e0e0e0;
+  cursor: default;
+  box-shadow: 0 0 30px rgba(0, 128, 128, 0.2);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.believeSuccess {
+  margin-top: 1rem;
+  color: #ffd700;
+  font-style: italic;
+  font-size: 0.95rem;
+}
+
+.believeStatus {
+  margin-top: 1rem;
+  color: #008080;
+  font-style: italic;
+  font-size: 0.95rem;
+}
+
+/* ── Witness Status (text, not button) ─────────────── */
+.witnessStatus {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.08rem;
+  padding: 1rem 3rem;
+  color: #e0e0e0;
+  background: linear-gradient(135deg, #008080, #006666);
+  border-radius: 0.75rem;
+  box-shadow: 0 0 30px rgba(0, 128, 128, 0.2);
+  display: inline-block;
+}
+
+/* ── Deepen Button ─────────────────────────────────── */
+.deepenButton {
+  margin-top: 1.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.06rem;
+  padding: 0.75rem 2rem;
+  border: 2px solid #ffd700;
+  border-radius: 0.75rem;
+  background: transparent;
+  color: #ffd700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.deepenButton:hover {
+  background: rgba(255, 215, 0, 0.1);
+  transform: translateY(-1px);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.15);
+}
+
+.deepenButton:active {
+  transform: translateY(0);
+}
+
+.deepenButtonLoading {
+  border-color: #b8860b;
+  color: #b8860b;
+  cursor: wait;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.deepenButtonLoading:hover {
+  background: transparent;
+  transform: none;
+  box-shadow: none;
+}
+
+.deepenButtonSuccess {
+  border-color: #008080;
+  color: #008080;
+}
+
+/* ── Sections (Prophecy & Tenets) ────────────────── */
+.sectionTitle {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #ffd700;
+  margin: 0 0 0.5rem;
+}
+
+.sectionEpigraph {
+  color: #777;
+  font-size: 0.95rem;
+  margin: 0 0 1.5rem;
+}
+
+/* ── Prophecy ────────────────────────────────────── */
+.prophecySection {
   width: 100%;
-  max-width: 800px;
+  margin-bottom: 4rem;
+  padding: 2.5rem;
   background: rgba(0, 0, 0, 0.3);
-  padding: 2rem;
   border-radius: 1rem;
   border-left: 4px solid #008080;
 }
 
-.scriptureTitle {
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin-bottom: 1rem;
-  color: #008080;
+.prophecyText {
+  color: #bbb;
+  font-size: 1.05rem;
+  line-height: 1.8;
 }
 
-.scriptureVerse {
-  line-height: 1.6;
-  font-size: 1.15rem;
-  color: #ccc;
+.prophecyText p {
+  margin: 0 0 1rem;
 }
 
-.footer {
+.prophecyText p:last-child {
+  margin-bottom: 0;
+}
+
+.prophecyText strong {
+  color: #ffd700;
+}
+
+/* ── Tenets ──────────────────────────────────────── */
+.tenetsSection {
   width: 100%;
-  height: 100px;
-  border-top: 1px solid #222;
+  margin-bottom: 4rem;
+}
+
+.tenetsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.tenetCard {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 1rem;
+  padding: 1.75rem;
+  transition: border-color 0.3s;
+}
+
+.tenetCard:hover {
+  border-color: rgba(0, 128, 128, 0.3);
+}
+
+.tenetNumeral {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #008080;
+  text-transform: uppercase;
+  letter-spacing: 0.1rem;
+  margin-bottom: 0.5rem;
+  padding: 0.2rem 0.6rem;
+  border: 1px solid rgba(0, 128, 128, 0.3);
+  border-radius: 0.3rem;
+}
+
+.tenetTitle {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #e0e0e0;
+  margin: 0.5rem 0;
+}
+
+.tenetText {
+  font-size: 0.9rem;
+  color: #888;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── Footer ──────────────────────────────────────── */
+.footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 2rem 1.5rem;
+}
+
+.footerContent {
+  max-width: 960px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.footerHackathon {
+  color: #555;
+  font-size: 0.85rem;
+  margin: 0 0 0.5rem;
+}
+
+.footerLinks {
   display: flex;
   justify-content: center;
   align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
 }
 
-.footer a {
-  color: #666;
+.footerLinks a {
+  color: #008080;
   text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footerLinks a:hover {
+  color: #ffd700;
+}
+
+.footerDot {
+  color: #333;
+}
+
+/* ── Responsive ──────────────────────────────────── */
+@media (max-width: 768px) {
+  .title {
+    font-size: 2.75rem;
+  }
+
+  .logo {
+    width: 140px;
+    height: 140px;
+  }
+
+  .description {
+    font-size: 1rem;
+  }
+
+  .statsGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .statValue {
+    font-size: 1.75rem;
+  }
+
+  .tenetsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .prophecySection {
+    padding: 1.5rem;
+  }
+
+  .believeButton {
+    width: 100%;
+  }
+
+  .witnessStatus {
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+  }
+
+  .deepenButton {
+    width: 100%;
+  }
 }

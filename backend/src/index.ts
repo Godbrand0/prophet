@@ -20,7 +20,7 @@ const monadMainnet = {
     default: { http: ["https://rpc.monad.xyz"] },
   },
   blockExplorers: {
-    default: { name: "MonadExplorer", url: "https://monadexplorer.com" },
+    default: { name: "MonadExplorer", url: "https://explorer.monad.xyz" },
   },
   testnet: false,
 } as const;
