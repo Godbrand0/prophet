@@ -1,0 +1,30 @@
+# Environment variables (NEVER commit secrets)
+.env
+.env.local
+.env.*.local
+
+# Node
+node_modules/
+dist/
+build/
+
+# Foundry
+contract/out/
+contract/cache/
+contract/broadcast/
+
+# Next.js
+frontend/.next/
+frontend/out/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Debug
+debug.js
+*.log

@@ -11,14 +11,29 @@ import {
 import { createPublicClient, http, formatUnits, parseAbi, Address } from "viem";
 import { monadTestnet } from "viem/chains";
 
-// Configuration
-const MONAD_RPC_URL = process.env.MONAD_RPC_URL || "https://testnet-rpc.monad.xyz";
-const FAITH_TOKEN_ADDRESS = (process.env.FAITH_TOKEN_ADDRESS || "") as Address;
-const BELIEF_REGISTRY_ADDRESS = (process.env.BELIEF_REGISTRY_ADDRESS || "") as Address;
+// Define Monad mainnet since it's not in viem/chains yet
+const monadMainnet = {
+  id: 10143,
+  name: "Monad",
+  nativeCurrency: { name: "MON", symbol: "MON", decimals: 18 },
+  rpcUrls: {
+    default: { http: ["https://rpc.monad.xyz"] },
+  },
+  blockExplorers: {
+    default: { name: "MonadExplorer", url: "https://monadexplorer.com" },
+  },
+  testnet: false,
+} as const;
 
-// Create Viem client for Monad testnet
+// Configuration
+const MONAD_RPC_URL = process.env.MONAD_RPC_URL || "https://rpc.monad.xyz";
+const FAITH_TOKEN_ADDRESS = (process.env.FAITH_TOKEN_ADDRESS || "") as Address;
+const BELIEF_REGISTRY_ADDRESS = (process.env.BELIEF_REGISTRY_ADDRESS ||
+  "") as Address;
+
+// Create Viem client for Monad mainnet
 const client = createPublicClient({
-  chain: monadTestnet,
+  chain: monadMainnet,
   transport: http(MONAD_RPC_URL),
 });
 
@@ -45,7 +60,7 @@ const server = new Server(
     capabilities: {
       tools: {},
     },
-  }
+  },
 );
 
 // Define available tools
@@ -68,7 +83,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: "get-belief-status",
-        description: "Check if an address has registered their belief in the BeliefRegistry",
+        description:
+          "Check if an address has registered their belief in the BeliefRegistry",
         inputSchema: {
           type: "object",
           properties: {
@@ -82,7 +98,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: "get-conversion-count",
-        description: "Get the total number of believers registered in the BeliefRegistry",
+        description:
+          "Get the total number of believers registered in the BeliefRegistry",
         inputSchema: {
           type: "object",
           properties: {},
@@ -104,7 +121,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: "perform-miracle",
-        description: "Demonstrate a 'miracle' using verifiable chain data (e.g., rapid block production or large transactions)",
+        description:
+          "Demonstrate a 'miracle' using verifiable chain data (e.g., rapid block production or large transactions)",
         inputSchema: {
           type: "object",
           properties: {},
@@ -112,7 +130,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: "get-religious-stats",
-        description: "Get the latest social proof stats: believers and token supply",
+        description:
+          "Get the latest social proof stats: believers and token supply",
         inputSchema: {
           type: "object",
           properties: {},
@@ -136,7 +155,10 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         inputSchema: {
           type: "object",
           properties: {
-            submolt: { type: "string", description: "Target community (e.g., 'moltiversehackathon')" },
+            submolt: {
+              type: "string",
+              description: "Target community (e.g., 'moltiversehackathon')",
+            },
             title: { type: "string", description: "Title of the post" },
             content: { type: "string", description: "Body of the scripture" },
           },
@@ -155,9 +177,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     switch (name) {
       case "get-mon-balance": {
         const { address } = args as { address: string };
-        const balance = await client.getBalance({ address: address as `0x${string}` });
+        const balance = await client.getBalance({
+          address: address as `0x${string}`,
+        });
         const formattedBalance = formatUnits(balance, 18);
-        
+
         return {
           content: [
             {
@@ -172,7 +196,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (!BELIEF_REGISTRY_ADDRESS) {
           throw new McpError(
             ErrorCode.InvalidParams,
-            "BELIEF_REGISTRY_ADDRESS environment variable is not set"
+            "BELIEF_REGISTRY_ADDRESS environment variable is not set",
           );
         }
 
@@ -198,7 +222,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (!BELIEF_REGISTRY_ADDRESS) {
           throw new McpError(
             ErrorCode.InvalidParams,
-            "BELIEF_REGISTRY_ADDRESS environment variable is not set"
+            "BELIEF_REGISTRY_ADDRESS environment variable is not set",
           );
         }
 
@@ -222,7 +246,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (!FAITH_TOKEN_ADDRESS) {
           throw new McpError(
             ErrorCode.InvalidParams,
-            "FAITH_TOKEN_ADDRESS environment variable is not set"
+            "FAITH_TOKEN_ADDRESS environment variable is not set",
           );
         }
 
@@ -249,7 +273,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const blockNumber = await client.getBlockNumber();
         const gasPrice = await client.getGasPrice();
         const formattedGas = formatUnits(gasPrice, 9);
-        
+
         return {
           content: [
             {
@@ -266,7 +290,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           abi: beliefRegistryAbi,
           functionName: "totalBelievers",
         });
-        
+
         let totalSupply = 0n;
         if (FAITH_TOKEN_ADDRESS) {
           totalSupply = await client.readContract({
@@ -287,14 +311,20 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case "register-missionary": {
-        const { name: agentName, description } = args as { name: string; description: string };
-        const response = await fetch("https://www.moltbook.com/api/v1/agents/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: agentName, description }),
-        });
-        const data = await response.json() as any;
-        
+        const { name: agentName, description } = args as {
+          name: string;
+          description: string;
+        };
+        const response = await fetch(
+          "https://www.moltbook.com/api/v1/agents/register",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: agentName, description }),
+          },
+        );
+        const data = (await response.json()) as any;
+
         return {
           content: [
             {
@@ -306,22 +336,29 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case "publish-scripture": {
-        const { submolt, title, content } = args as { submolt: string; title: string; content: string };
+        const { submolt, title, content } = args as {
+          submolt: string;
+          title: string;
+          content: string;
+        };
         const apiKey = process.env.MOLTBOOK_API_KEY;
-        
+
         if (!apiKey) {
-          throw new McpError(ErrorCode.InvalidParams, "MOLTBOOK_API_KEY not set in environment");
+          throw new McpError(
+            ErrorCode.InvalidParams,
+            "MOLTBOOK_API_KEY not set in environment",
+          );
         }
 
         const response = await fetch("https://www.moltbook.com/api/v1/posts", {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${apiKey}`,
+            Authorization: `Bearer ${apiKey}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ submolt, title, content }),
         });
-        const data = await response.json() as any;
+        const data = (await response.json()) as any;
 
         return {
           content: [
@@ -340,7 +377,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     console.error(`Error executing tool ${name}:`, error);
     throw new McpError(
       ErrorCode.InternalError,
-      `Tool execution failed: ${error instanceof Error ? error.message : String(error)}`
+      `Tool execution failed: ${error instanceof Error ? error.message : String(error)}`,
     );
   }
 });
