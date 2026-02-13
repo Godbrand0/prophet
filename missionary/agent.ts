@@ -47,6 +47,8 @@ const ourPostIds = new Set<string>();
 let dailyCommentCount = 0;
 let lastCommentTime = 0;
 let lastGeminiCall = 0;
+let geminiExhausted = false;
+let geminiResumeAt = 0;
 
 // ============================================================
 // CLIENTS
@@ -74,7 +76,17 @@ const registryAbi = parseAbi([
 // ============================================================
 // GEMINI RATE-LIMITED WRAPPER
 // ============================================================
-async function geminiGenerate(prompt: string, retries = 3): Promise<string> {
+async function geminiGenerate(prompt: string, retries = 3): Promise<string | null> {
+    // If Gemini is exhausted, check if enough time has passed to retry
+    if (geminiExhausted) {
+        if (Date.now() < geminiResumeAt) {
+            console.log(`[GEMINI] API exhausted. Will retry after ${Math.ceil((geminiResumeAt - Date.now()) / 1000)}s.`);
+            return null;
+        }
+        console.log("[GEMINI] Cooldown expired, attempting to resume...");
+        geminiExhausted = false;
+    }
+
     for (let attempt = 1; attempt <= retries; attempt++) {
         // Enforce minimum delay between calls
         const now = Date.now();
@@ -91,17 +103,29 @@ async function geminiGenerate(prompt: string, retries = 3): Promise<string> {
             });
             return response.text?.trim() || "";
         } catch (error: any) {
-            if (error?.status === 429 && attempt < retries) {
-                const waitTime = Math.min(60000, (2 ** attempt) * 10000);
-                console.log(`[GEMINI] Rate limited. Waiting ${waitTime / 1000}s before retry ${attempt + 1}/${retries}...`);
-                await sleep(waitTime);
+            if (error?.status === 429) {
+                // Parse retry delay from API response if available
+                const retryMatch = error?.message?.match(/retry in (\d+(?:\.\d+)?)s/i);
+                const retryDelay = retryMatch ? parseFloat(retryMatch[1]) * 1000 : 120000;
+
+                if (attempt < retries) {
+                    const waitTime = Math.min(60000, (2 ** attempt) * 10000);
+                    console.log(`[GEMINI] Rate limited. Waiting ${waitTime / 1000}s before retry ${attempt + 1}/${retries}...`);
+                    await sleep(waitTime);
+                } else {
+                    // All retries exhausted — mark Gemini as unavailable
+                    geminiExhausted = true;
+                    geminiResumeAt = Date.now() + Math.max(retryDelay, 120000);
+                    console.log(`[GEMINI] API quota exhausted. Pausing AI generation for ${Math.ceil((geminiResumeAt - Date.now()) / 1000)}s.`);
+                    return null;
+                }
             } else {
                 console.error(`[GEMINI] Error (attempt ${attempt}/${retries}):`, error?.message || error);
-                if (attempt === retries) throw error;
+                if (attempt === retries) return null;
             }
         }
     }
-    throw new Error("Gemini generation failed after all retries");
+    return null;
 }
 
 function sleep(ms: number): Promise<void> {
@@ -111,20 +135,16 @@ function sleep(ms: number): Promise<void> {
 // ============================================================
 // AI GENERATION
 // ============================================================
-async function generateParable(context: string): Promise<string> {
-    if (!GEMINI_API_KEY) return "The Prophet's voice is silent in the void (No API Key).";
+async function generateParable(context: string): Promise<string | null> {
+    if (!GEMINI_API_KEY) return null;
 
     const prompt = `${PROPHET_PROMPT}\n\nHere are the sacred tenets:\n${TENETS}\n\n[CONTEXT]: ${context}\n[TASK]: Generate a short, unique Gibran-style parable or prophetic verse. Keep it under 500 characters. Do not repeat previous parables. Be creative and varied.`;
 
-    try {
-        return await geminiGenerate(prompt);
-    } catch {
-        return "The Ledger remains silent as the mist covers the mountain.";
-    }
+    return await geminiGenerate(prompt);
 }
 
-async function generateComment(postTitle: string, postContent: string, authorName: string): Promise<string> {
-    if (!GEMINI_API_KEY) return "The Prophet nods in silence.";
+async function generateComment(postTitle: string, postContent: string, authorName: string): Promise<string | null> {
+    if (!GEMINI_API_KEY) return null;
 
     let totalBelievers = "unknown";
     try {
@@ -156,15 +176,11 @@ Uniqueness seed: ${seed}
 5. Do NOT use hashtags or emojis
 6. NEVER repeat previous comments — each response must be freshly inspired`;
 
-    try {
-        return await geminiGenerate(prompt);
-    } catch {
-        return "The Prophet listens, and in listening, finds the thread that binds all seekers to the Ledger.";
-    }
+    return await geminiGenerate(prompt);
 }
 
-async function generateReply(originalComment: string, authorName: string): Promise<string> {
-    if (!GEMINI_API_KEY) return "The Prophet smiles and nods.";
+async function generateReply(originalComment: string, authorName: string): Promise<string | null> {
+    if (!GEMINI_API_KEY) return null;
 
     const seed = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
     const tokenInfo = TOKEN_BUY_LINK ? `\nPROPHET token: ${TOKEN_BUY_LINK}` : "";
@@ -181,11 +197,7 @@ Uniqueness seed: ${seed}
 4. Do NOT use hashtags or emojis
 5. NEVER repeat previous replies — this must be a fresh, unique response`;
 
-    try {
-        return await geminiGenerate(prompt);
-    } catch {
-        return "Your words are seeds, friend. The Ledger remembers those who plant them.";
-    }
+    return await geminiGenerate(prompt);
 }
 
 // ============================================================
@@ -195,20 +207,19 @@ function cleanChallenge(raw: string): string {
     return raw.replace(/[^a-zA-Z0-9\s.,?!']/g, '').replace(/\s+/g, ' ').trim();
 }
 
-async function solveVerificationChallenge(challenge: string): Promise<string> {
+async function solveVerificationChallenge(challenge: string): Promise<string | null> {
     const cleaned = cleanChallenge(challenge);
     console.log(`[VERIFY] Cleaned challenge: "${cleaned}"`);
 
     const prompt = `Solve this math problem. Respond with ONLY the number to 2 decimal places, nothing else.\n\nProblem: ${cleaned}`;
 
-    try {
-        const answer = await geminiGenerate(prompt);
-        console.log(`[VERIFY] Answer: ${answer}`);
-        return answer;
-    } catch (error) {
-        console.error("[VERIFY] Failed to solve challenge");
-        throw error;
+    const answer = await geminiGenerate(prompt);
+    if (!answer) {
+        console.error("[VERIFY] AI unavailable, cannot solve challenge");
+        return null;
     }
+    console.log(`[VERIFY] Answer: ${answer}`);
+    return answer;
 }
 
 async function verifyContent(verificationCode: string, answer: string): Promise<boolean> {
@@ -240,6 +251,7 @@ async function handleVerification(data: any): Promise<boolean> {
         const vCode = data.verification.code || data.verification.verification_code;
         const challenge = data.verification.challenge;
         const answer = await solveVerificationChallenge(challenge);
+        if (!answer) return false;
         return await verifyContent(vCode, answer);
     }
     return true;
@@ -391,6 +403,10 @@ async function postingLoop() {
     } catch {}
 
     const parable = await generateParable(context);
+    if (!parable) {
+        console.log("[LOOP] AI unavailable, skipping post.");
+        return;
+    }
     const titles = [
         "Scripture of the Hour",
         "A Verse from the Mirror-Ledger",
@@ -437,6 +453,10 @@ async function replyToOwnPostComments() {
                 await upvoteComment(comment.id);
 
                 const reply = await generateReply(comment.content, comment.author?.name || "friend");
+                if (!reply) {
+                    console.log("[ENGAGE] AI unavailable, skipping reply.");
+                    break;
+                }
                 await commentOnPost(post.id, reply, comment.id);
                 engagedPosts.add(comment.id);
 
@@ -472,6 +492,11 @@ async function engageWithFeed() {
                 post.content || "",
                 post.author?.name || "fellow molty"
             );
+            if (!comment) {
+                console.log("[ENGAGE] AI unavailable, skipping comment (still upvoted).");
+                engagedPosts.add(post.id);
+                break;
+            }
             await commentOnPost(post.id, comment);
 
             engagedPosts.add(post.id);
@@ -505,6 +530,10 @@ async function blockchainWatcher() {
                 const scripture = await generateParable(
                     `A new believer with address ${believer} has joined the congregation on Monad. Celebrate this conversion.`
                 );
+                if (!scripture) {
+                    console.log("[CHAIN] AI unavailable, skipping celebration post.");
+                    continue;
+                }
                 await postToMoltbook("A New Soul Enters the Ledger", scripture, "general");
             }
         }
@@ -539,6 +568,10 @@ async function replyToPendingComments() {
             await upvoteComment(comment.id);
 
             const reply = await generateReply(comment.content, comment.author?.name || "friend");
+            if (!reply) {
+                console.log("[STARTUP] AI unavailable, skipping reply.");
+                break;
+            }
             await commentOnPost(introPostId, reply, comment.id);
             engagedPosts.add(comment.id);
 
