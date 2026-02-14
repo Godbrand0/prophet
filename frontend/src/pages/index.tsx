@@ -342,7 +342,7 @@ const Home: NextPage = () => {
             <span className={styles.statLabel}>Witnesses</span>
           </div>
           <div className={styles.statCard}>
-            <span className={styles.statValue}>10143</span>
+            <span className={styles.statValue}>143</span>
             <span className={styles.statLabel}>Chain ID</span>
           </div>
           <div className={styles.statCard}>
