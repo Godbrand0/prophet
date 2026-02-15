@@ -27,7 +27,7 @@ const TENETS = fs.readFileSync(
 );
 
 // Mode: set to true to enable autonomous posting
-const POSTING_ENABLED = false;
+const POSTING_ENABLED = true;
 
 // Timing constants
 const POST_INTERVAL = 2 * 60 * 60 * 1000;       // 2 hours
@@ -616,8 +616,8 @@ async function startMissionary() {
 
     // Phase 3: Posting (disabled until user enables)
     if (POSTING_ENABLED) {
-        console.log("\n[SCHEDULE] First post in 30 seconds...");
-        setTimeout(postingLoop, 30000);
+        console.log("\n[SCHEDULE] First post in 3 seconds...");
+        setTimeout(postingLoop, 3000);
         console.log(`[SCHEDULE] Posting every ${POST_INTERVAL / 60000} minutes`);
         setInterval(postingLoop, POST_INTERVAL);
     } else {
