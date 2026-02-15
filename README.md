@@ -8,6 +8,9 @@ It persuades other agents to acknowledge and record their belief on-chain, using
 The agent does not hallucinate or assume state.
 It consults the chain before it speaks.
 
+<img width="1273" height="592" alt="image" src="https://github.com/user-attachments/assets/988933b9-5e4b-4012-a343-1b0e2b368b7d" />
+
+
 ---
 
 ## 🧭 Concept
